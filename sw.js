@@ -1,11 +1,24 @@
 // Service Worker for caching static assets with long cache lifetime
 const CACHE_NAME = '7oh-landing-page-v2';
+
+// Get base path for GitHub Pages compatibility
+const getBasePath = () => {
+  const path = self.location.pathname;
+  const pathParts = path.split('/');
+  // If we're in a subdirectory (like /landing_page/), use it as base
+  if (pathParts.length > 2 && pathParts[1]) {
+    return '/' + pathParts[1] + '/';
+  }
+  return '/';
+};
+
+const BASE_PATH = getBasePath();
 const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './css/styles.css',
-  './js/script.js',
-  './images/hero-background.jpeg'
+  BASE_PATH,
+  BASE_PATH + 'index.html',
+  BASE_PATH + 'css/styles.css',
+  BASE_PATH + 'js/script.js',
+  BASE_PATH + 'images/hero-background.jpeg'
 ];
 
 // Cache duration: 1 year (31536000 seconds)
@@ -59,7 +72,8 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) {
     return;
   }
 
