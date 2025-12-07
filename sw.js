@@ -1,18 +1,35 @@
-// Service Worker for caching static assets
-const CACHE_NAME = '7oh-landing-page-v1';
+// Service Worker for caching static assets with long cache lifetime
+const CACHE_NAME = '7oh-landing-page-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/script.js',
-  '/images/hero-background.jpeg'
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/script.js',
+  './images/hero-background.jpeg'
 ];
+
+// Cache duration: 1 year (31536000 seconds)
+const CACHE_DURATION = 31536000;
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.log('Cache addAll failed, caching individually:', err);
+        // If addAll fails, try caching individually
+        return Promise.all(
+          STATIC_ASSETS.map(url => {
+            return fetch(url).then(response => {
+              if (response.ok) {
+                return cache.put(url, response);
+              }
+            }).catch(() => {
+              // Ignore individual failures
+            });
+          })
+        );
+      });
     })
   );
   self.skipWaiting();
@@ -34,10 +51,15 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - serve from cache with long lifetime, fallback to network
 self.addEventListener('fetch', (event) => {
   // Only cache GET requests
   if (event.request.method !== 'GET') {
+    return;
+  }
+
+  // Skip cross-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
     return;
   }
 
@@ -45,7 +67,16 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((response) => {
       // Return cached version if available
       if (response) {
-        return response;
+        // Create a new response with cache headers
+        const headers = new Headers(response.headers);
+        headers.set('Cache-Control', `public, max-age=${CACHE_DURATION}, immutable`);
+        headers.set('Expires', new Date(Date.now() + CACHE_DURATION * 1000).toUTCString());
+        
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: headers
+        });
       }
 
       // Otherwise fetch from network
@@ -58,12 +89,21 @@ self.addEventListener('fetch', (event) => {
         // Clone the response
         const responseToCache = response.clone();
 
-        // Cache the new response
+        // Cache the new response with long lifetime
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
 
-        return response;
+        // Add cache headers to the response
+        const headers = new Headers(response.headers);
+        headers.set('Cache-Control', `public, max-age=${CACHE_DURATION}, immutable`);
+        headers.set('Expires', new Date(Date.now() + CACHE_DURATION * 1000).toUTCString());
+        
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: headers
+        });
       });
     })
   );
