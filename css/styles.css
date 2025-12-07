@@ -7,8 +7,6 @@
 
 html {
     scroll-behavior: smooth;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
 body {
@@ -17,25 +15,6 @@ body {
     color: #1a1a1a;
     background-color: #ffffff;
     overflow-x: hidden;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-}
-
-/* Fix deprecated UserAgentFontSizeInSection warning - must be at the top */
-html, html * {
-    -webkit-text-size-adjust: 100% !important;
-    text-size-adjust: 100% !important;
-}
-
-section, section * {
-    -webkit-text-size-adjust: 100% !important;
-    text-size-adjust: 100% !important;
-}
-
-/* Additional fix for all elements */
-*, *::before, *::after {
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
 }
 
 .container {
