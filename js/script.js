@@ -1,66 +1,177 @@
-// Mobile Menu Toggle
-const hamburger = document.getElementById('hamburger');
-const navMenu = document.getElementById('navMenu');
-
-if (hamburger && navMenu) {
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
+// Testimonials Carousel
+document.addEventListener('DOMContentLoaded', function() {
+    const carousel = document.querySelector('.testimonials-carousel');
+    if (!carousel) return;
+    
+    const slides = carousel.querySelectorAll('.testimonial-slide');
+    let currentIndex = 0;
+    let autoSlideInterval;
+    
+    // Create navigation dots
+    const dotsContainer = document.createElement('div');
+    dotsContainer.className = 'carousel-dots';
+    dotsContainer.style.cssText = 'display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;';
+    
+    slides.forEach((_, index) => {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot';
+        dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+        dot.style.cssText = 'width: 12px; height: 12px; border-radius: 50%; border: none; background: #e5e7eb; cursor: pointer; transition: background 0.3s;';
+        if (index === 0) {
+            dot.style.background = '#2e7d32';
+        }
+        dot.addEventListener('click', () => goToSlide(index));
+        dotsContainer.appendChild(dot);
     });
-
-    // Close menu when clicking on a link
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.addEventListener('click', () => {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
+    
+    carousel.parentElement.appendChild(dotsContainer);
+    
+    // Create navigation arrows
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'carousel-prev';
+    prevBtn.innerHTML = '‹';
+    prevBtn.setAttribute('aria-label', 'Previous slide');
+    prevBtn.style.cssText = 'position: absolute; left: -50px; top: 50%; transform: translateY(-50%); background: #2e7d32; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center;';
+    
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'carousel-next';
+    nextBtn.innerHTML = '›';
+    nextBtn.setAttribute('aria-label', 'Next slide');
+    nextBtn.style.cssText = 'position: absolute; right: -50px; top: 50%; transform: translateY(-50%); background: #2e7d32; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center;';
+    
+    const carouselWrapper = document.createElement('div');
+    carouselWrapper.style.cssText = 'position: relative;';
+    carousel.parentElement.insertBefore(carouselWrapper, carousel);
+    carouselWrapper.appendChild(carousel);
+    carouselWrapper.appendChild(prevBtn);
+    carouselWrapper.appendChild(nextBtn);
+    
+    // Check if mobile view
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+    
+    function updateCarousel() {
+        const slidesPerView = isMobile() ? 1 : 2;
+        
+        // Hide all slides
+        slides.forEach((slide, index) => {
+            if (index >= currentIndex && index < currentIndex + slidesPerView) {
+                slide.style.display = 'block';
+            } else {
+                slide.style.display = 'none';
+            }
         });
+        
+        // Update dots
+        const dots = dotsContainer.querySelectorAll('.carousel-dot');
+        const dotIndex = isMobile() ? currentIndex : Math.floor(currentIndex / 2);
+        dots.forEach((dot, index) => {
+            if (index === dotIndex) {
+                dot.style.background = '#2e7d32';
+            } else {
+                dot.style.background = '#e5e7eb';
+            }
+        });
+    }
+    
+    function goToSlide(index) {
+        if (isMobile()) {
+            currentIndex = index;
+        } else {
+            currentIndex = index * 2;
+            if (currentIndex >= slides.length) {
+                currentIndex = slides.length - 2;
+            }
+        }
+        updateCarousel();
+        resetAutoSlide();
+    }
+    
+    function nextSlide() {
+        const slidesPerView = isMobile() ? 1 : 2;
+        currentIndex += slidesPerView;
+        if (currentIndex >= slides.length) {
+            currentIndex = 0;
+        }
+        updateCarousel();
+        resetAutoSlide();
+    }
+    
+    function prevSlide() {
+        const slidesPerView = isMobile() ? 1 : 2;
+        currentIndex -= slidesPerView;
+        if (currentIndex < 0) {
+            currentIndex = slides.length - slidesPerView;
+        }
+        updateCarousel();
+        resetAutoSlide();
+    }
+    
+    function startAutoSlide() {
+        autoSlideInterval = setInterval(nextSlide, 5000);
+    }
+    
+    function resetAutoSlide() {
+        clearInterval(autoSlideInterval);
+        startAutoSlide();
+    }
+    
+    prevBtn.addEventListener('click', prevSlide);
+    nextBtn.addEventListener('click', nextSlide);
+    
+    // Initialize
+    updateCarousel();
+    startAutoSlide();
+    
+    // Update on window resize
+    window.addEventListener('resize', () => {
+        updateCarousel();
     });
-}
+    
+    // Pause on hover
+    carousel.addEventListener('mouseenter', () => {
+        clearInterval(autoSlideInterval);
+    });
+    
+    carousel.addEventListener('mouseleave', () => {
+        startAutoSlide();
+    });
+});
 
-// Smooth Scrolling for Navigation Links
+// Smooth scroll for anchor links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
-            const offsetTop = target.offsetTop - 80;
-            window.scrollTo({
-                top: offsetTop,
-                behavior: 'smooth'
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
             });
         }
     });
 });
 
-// Form Submission
-const signupForm = document.getElementById('signupForm');
-if (signupForm) {
-    signupForm.addEventListener('submit', (e) => {
+// Form submission handler
+const newsletterForm = document.querySelector('.newsletter-form');
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const email = document.getElementById('email').value;
-        
-        if (email) {
-            // Simple email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (emailRegex.test(email)) {
-                alert('Thank you for signing up! We\'ll be in touch soon.');
-                signupForm.reset();
-            } else {
-                alert('Please enter a valid email address.');
-            }
-        } else {
-            alert('Please enter your email address.');
-        }
+        const email = this.querySelector('input[type="email"]').value;
+        // Here you would typically send the email to your backend
+        alert('Thank you for subscribing! (This is a demo - form submission is not connected)');
+        this.reset();
     });
 }
 
-// Scroll Animation for Elements
+// Add scroll animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
 };
 
-const observer = new IntersectionObserver((entries) => {
+const observer = new IntersectionObserver(function(entries) {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.style.opacity = '1';
@@ -69,82 +180,11 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe feature cards, testimonials, and benefit items
-document.addEventListener('DOMContentLoaded', () => {
-    const animatedElements = document.querySelectorAll('.feature-card, .testimonial-card, .benefit-item');
-    
-    animatedElements.forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(el);
-    });
+// Observe elements for animation
+document.querySelectorAll('.benefit-card, .feature-item, .testimonial-slide').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
 });
-
-// Navbar Background on Scroll
-let lastScroll = 0;
-const navbar = document.querySelector('.navbar');
-
-window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    
-    if (currentScroll > 100) {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-        navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
-    } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-        navbar.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.05)';
-    }
-    
-    lastScroll = currentScroll;
-});
-
-// Button Click Animations
-document.querySelectorAll('.cta-button').forEach(button => {
-    button.addEventListener('click', function(e) {
-        // Create ripple effect
-        const ripple = document.createElement('span');
-        const rect = this.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-        
-        ripple.style.width = ripple.style.height = size + 'px';
-        ripple.style.left = x + 'px';
-        ripple.style.top = y + 'px';
-        ripple.classList.add('ripple');
-        
-        this.appendChild(ripple);
-        
-        setTimeout(() => {
-            ripple.remove();
-        }, 600);
-    });
-});
-
-// Add ripple effect styles dynamically
-const style = document.createElement('style');
-style.textContent = `
-    .cta-button {
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .ripple {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.6);
-        transform: scale(0);
-        animation: ripple-animation 0.6s ease-out;
-        pointer-events: none;
-    }
-    
-    @keyframes ripple-animation {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
