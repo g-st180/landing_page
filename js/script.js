@@ -46,32 +46,35 @@ document.addEventListener('DOMContentLoaded', function() {
     carouselWrapper.appendChild(prevBtn);
     carouselWrapper.appendChild(nextBtn);
     
-    // Check if mobile view
+    // Cache mobile state to avoid forced reflows
+    let isMobileView = window.innerWidth <= 768;
+    
+    // Check if mobile view (cached)
     function isMobile() {
-        return window.innerWidth <= 768;
+        return isMobileView;
     }
     
     function updateCarousel() {
         const slidesPerView = isMobile() ? 1 : 2;
         
-        // Hide all slides
+        // Batch all DOM writes together to avoid forced reflows
+        // First, collect all style changes
+        const slideChanges = [];
         slides.forEach((slide, index) => {
-            if (index >= currentIndex && index < currentIndex + slidesPerView) {
-                slide.style.display = 'block';
-            } else {
-                slide.style.display = 'none';
-            }
+            const shouldShow = index >= currentIndex && index < currentIndex + slidesPerView;
+            slideChanges.push({ slide, display: shouldShow ? 'block' : 'none' });
         });
         
-        // Update dots
+        // Apply all slide changes at once
+        slideChanges.forEach(({ slide, display }) => {
+            slide.style.display = display;
+        });
+        
+        // Then update dots
         const dots = dotsContainer.querySelectorAll('.carousel-dot');
         const dotIndex = isMobile() ? currentIndex : Math.floor(currentIndex / 2);
         dots.forEach((dot, index) => {
-            if (index === dotIndex) {
-                dot.style.background = '#2e7d32';
-            } else {
-                dot.style.background = '#e5e7eb';
-            }
+            dot.style.background = index === dotIndex ? '#2e7d32' : '#e5e7eb';
         });
     }
     
@@ -124,9 +127,18 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCarousel();
     startAutoSlide();
     
-    // Update on window resize
+    // Debounced resize handler to avoid forced reflows
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        updateCarousel();
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const wasMobile = isMobileView;
+            isMobileView = window.innerWidth <= 768;
+            // Only update if mobile state changed
+            if (wasMobile !== isMobileView) {
+                updateCarousel();
+            }
+        }, 150);
     });
     
     // Pause on hover
@@ -180,11 +192,14 @@ const observer = new IntersectionObserver(function(entries) {
     });
 }, observerOptions);
 
-// Observe elements for animation
-document.querySelectorAll('.benefit-card, .feature-item, .testimonial-slide').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
+// Observe elements for animation - batch style writes to avoid forced reflows
+const elementsToAnimate = document.querySelectorAll('.benefit-card, .feature-item, .testimonial-slide');
+requestAnimationFrame(() => {
+    elementsToAnimate.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
 });
 
