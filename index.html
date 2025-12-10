@@ -8,10 +8,22 @@
     <meta name="keywords" content="7OH, 7OH tablets, 7-OH, bulk 7OH, 7OH powder, 7OH extract, kratom, mitragynine">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://bulk7oh.net/">
-    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="css/styles.css" as="style">
+    
+    <!-- Load CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Load fonts asynchronously -->
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&display=swap" rel="stylesheet"></noscript>
     
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
@@ -546,7 +558,7 @@
         </div>
     </footer>
 
-    <script src="js/script.js"></script>
+    <script src="js/script.js" defer></script>
 </body>
 </html>
 
