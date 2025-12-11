@@ -256,6 +256,8 @@ body {
     position: relative;
     z-index: 10;
     margin-bottom: -2rem;
+    margin-left: 1.5rem;
+    align-self: flex-start;
 }
 
 .hero-promo-container {
@@ -339,7 +341,7 @@ body {
     height: 100%;
     top: 0;
     left: 0;
-    z-index: 3;
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -351,13 +353,13 @@ body {
 }
 
 .money-emoji:nth-child(1) {
-    top: 8%;
+    top: 20%;
     left: 8%;
     animation-delay: 0s;
 }
 
 .money-emoji:nth-child(2) {
-    top: 12%;
+    top: 25%;
     right: 12%;
     animation-delay: 0.5s;
 }
@@ -765,10 +767,10 @@ body {
 
 .testimonial-text {
     color: #4a5568;
-    line-height: 1.8;
+    line-height: 1.6;
     margin-bottom: 1.5rem;
     font-style: italic;
-    font-size: 1rem;
+    font-size: 0.85rem;
     flex: 1;
     overflow-y: auto;
 }

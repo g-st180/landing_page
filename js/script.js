@@ -7,23 +7,40 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentIndex = 0;
     let autoSlideInterval;
     
+    // Cache mobile state to avoid forced reflows
+    let isMobileView = window.innerWidth <= 768;
+    
+    // Check if mobile view (cached)
+    function isMobile() {
+        return isMobileView;
+    }
+    
     // Create navigation dots
     const dotsContainer = document.createElement('div');
     dotsContainer.className = 'carousel-dots';
     dotsContainer.style.cssText = 'display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;';
     
-    slides.forEach((_, index) => {
-        const dot = document.createElement('button');
-        dot.className = 'carousel-dot';
-        dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
-        dot.style.cssText = 'width: 12px; height: 12px; border-radius: 50%; border: none; background: #e5e7eb; cursor: pointer; transition: background 0.3s;';
-        if (index === 0) {
-            dot.style.background = '#2e7d32';
+    function createDots() {
+        // Clear existing dots
+        dotsContainer.innerHTML = '';
+        
+        const slidesPerView = isMobile() ? 1 : 2;
+        const totalDots = isMobile() ? slides.length : Math.ceil(slides.length / slidesPerView);
+        
+        for (let i = 0; i < totalDots; i++) {
+            const dot = document.createElement('button');
+            dot.className = 'carousel-dot';
+            dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+            dot.style.cssText = 'width: 12px; height: 12px; border-radius: 50%; border: none; background: #e5e7eb; cursor: pointer; transition: background 0.3s;';
+            if (i === 0) {
+                dot.style.background = '#2e7d32';
+            }
+            dot.addEventListener('click', () => goToSlide(i));
+            dotsContainer.appendChild(dot);
         }
-        dot.addEventListener('click', () => goToSlide(index));
-        dotsContainer.appendChild(dot);
-    });
+    }
     
+    createDots();
     carousel.parentElement.appendChild(dotsContainer);
     
     // Create navigation arrows
@@ -45,14 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
     carouselWrapper.appendChild(carousel);
     carouselWrapper.appendChild(prevBtn);
     carouselWrapper.appendChild(nextBtn);
-    
-    // Cache mobile state to avoid forced reflows
-    let isMobileView = window.innerWidth <= 768;
-    
-    // Check if mobile view (cached)
-    function isMobile() {
-        return isMobileView;
-    }
     
     function updateCarousel() {
         const slidesPerView = isMobile() ? 1 : 2;
@@ -136,6 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
             isMobileView = window.innerWidth <= 768;
             // Only update if mobile state changed
             if (wasMobile !== isMobileView) {
+                createDots();
+                currentIndex = 0;
                 updateCarousel();
             }
         }, 150);
